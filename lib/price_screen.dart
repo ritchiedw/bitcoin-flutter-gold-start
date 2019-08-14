@@ -10,6 +10,7 @@ class PriceScreen extends StatefulWidget {
 
 class _PriceScreenState extends State<PriceScreen> {
   String selectedCurrency = 'AUD';
+  String selectedCrypto = 'BTC';
 
   DropdownButton<String> androidDropdown() {
     List<DropdownMenuItem<String>> dropdownItems = [];
@@ -52,16 +53,19 @@ class _PriceScreenState extends State<PriceScreen> {
     );
   }
 
-  String value = '?';
+  Map<String, String> cryptoData = {};
 
   //TODO 7: Figure out a way of displaying a '?' on screen while we're waiting for the price data to come back. Hint: You'll need a ternary operator.
-
+  bool isWaiting = false;
   //TODO 6: Update this method to receive a Map containing the crypto:price key value pairs. Then use that map to update the CryptoCards.
   void getData() async {
     try {
-      double data = await CoinData().getCoinData(selectedCurrency);
+      print("getData");
+      isWaiting = true;
+      Map data = await CoinData().getCoinData(selectedCurrency);
+      isWaiting = false;
       setState(() {
-        value = data.toStringAsFixed(0);
+        cryptoData = data;
       });
     } catch (e) {
       print(e);
@@ -89,7 +93,21 @@ class _PriceScreenState extends State<PriceScreen> {
           //TODO 1: Refactor this Padding Widget into a separate Stateless Widget called CryptoCard, so we can create 3 of them, one for each cryptocurrency.
           //TODO 2: You'll need to able to pass the selectedCurrency, value and cryptoCurrency to the constructor of this CryptoCard Widget.
           //TODO 3: You'll need to use a Column Widget to contain the three CryptoCards.
-          new CryptoCard(value: value, selectedCurrency: selectedCurrency),
+          new CryptoCard(
+            value: isWaiting ? '?' : cryptoData['BTC'],
+            selectedCurrency: selectedCurrency,
+            selectedCrypto: 'BTC',
+          ),
+          new CryptoCard(
+            value: isWaiting ? '?' : cryptoData['ETH'],
+            selectedCurrency: selectedCurrency,
+            selectedCrypto: 'ETH',
+          ),
+          new CryptoCard(
+            value: isWaiting ? '?' : cryptoData['LTC'],
+            selectedCurrency: selectedCurrency,
+            selectedCrypto: 'LTC',
+          ),
           Container(
             height: 150.0,
             alignment: Alignment.center,
@@ -107,10 +125,12 @@ class CryptoCard extends StatelessWidget {
   const CryptoCard({
     @required this.value,
     @required this.selectedCurrency,
+    @required this.selectedCrypto,
   });
 
   final String value;
   final String selectedCurrency;
+  final String selectedCrypto;
 
   @override
   Widget build(BuildContext context) {
@@ -125,7 +145,7 @@ class CryptoCard extends StatelessWidget {
         child: Padding(
           padding: EdgeInsets.symmetric(vertical: 15.0, horizontal: 28.0),
           child: Text(
-            '1 BTC = $value $selectedCurrency',
+            '1 $selectedCrypto = $value $selectedCurrency',
             textAlign: TextAlign.center,
             style: TextStyle(
               fontSize: 20.0,
